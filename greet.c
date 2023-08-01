@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 
-int moon_phase(int year, int month, int day);
+int moon_phase(int, int, int);
 
 int main(int argc, char *argv[]) {
     time_t now;
