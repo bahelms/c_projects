@@ -1,5 +1,3 @@
-$ clang -Wall source.c -o name -l m
+# Tiny C Projects
 
--Wall: activates all warnings
--o name: name output file
--l m: links math lib
+https://www.manning.com/books/tiny-c-projects
