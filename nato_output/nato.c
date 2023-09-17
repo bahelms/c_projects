@@ -5,30 +5,37 @@
 
 #define BUFFER_LENGTH 64
 
-char isterm(char *);
-void natoToWord();
-void wordToNato();
-void checkFile(char *);
+char isterm(char *, const char *[]);
+void natoToWord(const char *[]);
+void wordToNato(const char *[]);
+void checkFile(char *, const char *[]);
 
 int main(int argc, char *argv[]) {
+    const char *nato[] = {"Alfa",    "Bravo",  "Charlie", "Delta",    "Echo",
+                          "Foxtrot", "Golf",   "Hotel",   "India",    "Juliett",
+                          "Kilo",    "Lima",   "Mike",    "November", "Oscar",
+                          "Papa",    "Quebec", "Romeo",   "Sierra",   "Tango",
+                          "Uniform", "Victor", "Whiskey", "Xray",     "Yankee",
+                          "Zulu"};
+
     if (argc > 1) {
         if (strcmp(argv[1], "--nato-to-word") == 0) {
-            natoToWord();
+            natoToWord(nato);
         } else if (strcmp(argv[1], "--file") == 0) {
             if (argc < 3) {
                 fprintf(stderr, "Please supply a text file argument\n");
                 exit(1);
             }
-            checkFile(argv[2]);
+            checkFile(argv[2], nato);
         }
     } else {
-        wordToNato();
+        wordToNato(nato);
     }
 
     return 0;
 }
 
-void natoToWord() {
+void natoToWord(const char *nato[]) {
     char phrase[BUFFER_LENGTH];
     char *match;
     char ch;
@@ -38,20 +45,14 @@ void natoToWord() {
 
     match = strtok(phrase, " ");
     while (match) {
-        if ((ch = isterm(match)) != '\0')
+        if ((ch = isterm(match, nato)) != '\0')
             putchar(ch);
         match = strtok(NULL, " "); // this hurts my soul
     }
     putchar('\n');
 }
 
-void wordToNato() {
-    const char *nato[] = {"Alfa",    "Bravo",  "Charlie", "Delta",    "Echo",
-                          "Foxtrot", "Golf",   "Hotel",   "India",    "Juliett",
-                          "Kilo",    "Lima",   "Mike",    "November", "Oscar",
-                          "Papa",    "Quebec", "Romeo",   "Sierra",   "Tango",
-                          "Uniform", "Victor", "Whiskey", "Xray",     "Yankee",
-                          "Zulu"};
+void wordToNato(const char *nato[]) {
     char buffer[BUFFER_LENGTH];
     char ch;
     int i = 0;
@@ -71,7 +72,7 @@ void wordToNato() {
     putchar('\n');
 }
 
-void checkFile(char *filename) {
+void checkFile(char *filename, const char *nato[]) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         fprintf(stderr, "Unable to open '%s'\n", filename);
@@ -93,7 +94,7 @@ void checkFile(char *filename) {
             }
         } else if (offset > 0) {
             word[offset] = '\0';
-            putchar(isterm(word));
+            putchar(isterm(word, nato));
             offset = 0;
         }
     }
@@ -101,13 +102,7 @@ void checkFile(char *filename) {
     fclose(file);
 }
 
-char isterm(char *term) {
-    const char *nato[] = {"Alfa",    "Bravo",  "Charlie", "Delta",    "Echo",
-                          "Foxtrot", "Golf",   "Hotel",   "India",    "Juliett",
-                          "Kilo",    "Lima",   "Mike",    "November", "Oscar",
-                          "Papa",    "Quebec", "Romeo",   "Sierra",   "Tango",
-                          "Uniform", "Victor", "Whiskey", "Xray",     "Yankee",
-                          "Zulu"};
+char isterm(char *term, const char *nato[]) {
     const char *n;
     char *t;
 
