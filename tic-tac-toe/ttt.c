@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 void show_grid(int *grid) {
     const char bfwb[] = "\x1b[32;47m";
@@ -83,21 +85,57 @@ int winner(int *grid) {
     return 0;
 }
 
+int computer(int *grid) {
+    int r;
+    do {
+        r = rand() % 9;
+    } while (*(grid + r) != 0);
+    r++;
+    printf("The computer moves to square %d\n", r);
+    return r;
+}
+
 int main(int argc, char *argv[]) {
     int grid[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int ply = 0, input;
+    int ply = 0, square, players;
+
+    srand((unsigned)time(NULL));
 
     puts("Tic-Tac-Toe");
+    printf("Number of players (0, 1, 2): ");
+    scanf("%d", &players);
+    if (players < 0 || players > 2)
+        return 1;
+
+    int active = rand() % 2;
+    if (active) {
+        puts("Computer goes first!");
+    } else {
+        puts("You go first!");
+    }
 
     while (ply < 9) {
         show_grid(grid);
-        while ((input = prompt(ply, grid)) == -1)
-            ;
-        if (input == 0)
+
+        if (players == 0) {
+            square = computer(grid);
+        } else if (players == 1) {
+            if (active) {
+                square = computer(grid);
+                active = 0;
+            } else {
+                while ((square = prompt(ply, grid)) == -1)
+                    ;
+                active = 1;
+            }
+        } else {
+            while ((square = prompt(ply, grid)) == -1)
+                ;
+        }
+
+        if (square == 0)
             break;
-
-        grid[input - 1] = ply % 2 ? -1 : 1;
-
+        grid[square - 1] = ply % 2 ? -1 : 1;
         if (winner(grid))
             break;
         ply++;
