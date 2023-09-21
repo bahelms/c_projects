@@ -2,6 +2,16 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define TL *(grid + 0)
+#define TC *(grid + 1)
+#define TR *(grid + 2)
+#define ML *(grid + 3)
+#define MC *(grid + 4)
+#define MR *(grid + 5)
+#define BL *(grid + 6)
+#define BC *(grid + 7)
+#define BR *(grid + 8)
+
 void show_grid(int *grid) {
     const char bfwb[] = "\x1b[32;47m";
     const char bf[] = "\x1b[32m";
@@ -57,9 +67,7 @@ int prompt(int ply, int *grid) {
     return square;
 }
 
-int winner(int *grid) {
-    int slice[8];
-
+void slice_grid(int *grid, int *slice) {
     slice[0] = *(grid + 0) + *(grid + 3) + *(grid + 6);
     slice[1] = *(grid + 1) + *(grid + 4) + *(grid + 7);
     slice[2] = *(grid + 2) + *(grid + 5) + *(grid + 8);
@@ -68,6 +76,11 @@ int winner(int *grid) {
     slice[5] = *(grid + 6) + *(grid + 7) + *(grid + 8);
     slice[6] = *(grid + 0) + *(grid + 4) + *(grid + 8);
     slice[7] = *(grid + 2) + *(grid + 4) + *(grid + 6);
+}
+
+int winner(int *grid) {
+    int slice[8];
+    slice_grid(grid, slice);
 
     for (int i = 0; i < 8; i++) {
         if (slice[i] == -3) {
@@ -85,14 +98,108 @@ int winner(int *grid) {
     return 0;
 }
 
-int computer(int *grid) {
-    int r;
-    do {
-        r = rand() % 9;
-    } while (*(grid + r) != 0);
-    r++;
-    printf("The computer moves to square %d\n", r);
-    return r;
+int choose_square(int *grid, int token) {
+    if (TL + ML + BL == token * 2) {
+        if (TL == 0)
+            return 0;
+        if (ML == 0)
+            return 3;
+        if (BL == 0)
+            return 6;
+    }
+    if (TC + MC + BC == token * 2) {
+        if (TC == 0)
+            return 1;
+        if (MC == 0)
+            return 4;
+        if (BC == 0)
+            return 7;
+    }
+    if (TR + MR + BR == token * 2) {
+        if (TR == 0)
+            return 2;
+        if (MR == 0)
+            return 5;
+        if (BR == 0)
+            return 8;
+    }
+    if (TL + TC + TR == token * 2) {
+        if (TL == 0)
+            return 0;
+        if (TC == 0)
+            return 1;
+        if (TR == 0)
+            return 2;
+    }
+    if (ML + MC + MR == token * 2) {
+        if (ML == 0)
+            return 3;
+        if (MC == 0)
+            return 4;
+        if (MR == 0)
+            return 5;
+    }
+    if (BL + BC + BR == token * 2) {
+        if (BL == 0)
+            return 6;
+        if (BC == 0)
+            return 7;
+        if (BR == 0)
+            return 8;
+    }
+    if (TL + MC + BR == token * 2) {
+        if (TL == 0)
+            return 0;
+        if (MC == 0)
+            return 4;
+        if (BR == 0)
+            return 8;
+    }
+    if (TR + MC + BL == token * 2) {
+        if (TR == 0)
+            return 2;
+        if (MC == 0)
+            return 4;
+        if (BL == 0)
+            return 6;
+    }
+    return -1;
+}
+
+int computer(int ply, int *grid) {
+    // grab center ASAP
+    if (ply == 0 || (ply == 1 && MC == 0)) {
+        puts("Computer snags the center!");
+        return 5;
+    }
+
+    // take the corner when center is taken
+    if (ply == 1 && TL == 0) {
+        puts("Computer moves to square 1");
+        return 1;
+    }
+
+    int square;
+    if (ply % 2)
+        square = choose_square(grid, -1);
+    else
+        square = choose_square(grid, 1);
+
+    if (square == -1) {
+        if (ply % 2)
+            square = choose_square(grid, 1);
+        else
+            square = choose_square(grid, -1);
+    }
+
+    if (square == -1) {
+        do {
+            square = rand() % 9;
+        } while (*(grid + square) != 0);
+    }
+    square++;
+    printf("The computer moves to square %d\n", square);
+    return square;
 }
 
 int main(int argc, char *argv[]) {
@@ -118,10 +225,10 @@ int main(int argc, char *argv[]) {
         show_grid(grid);
 
         if (players == 0) {
-            square = computer(grid);
+            square = computer(ply, grid);
         } else if (players == 1) {
             if (active) {
-                square = computer(grid);
+                square = computer(ply, grid);
                 active = 0;
             } else {
                 while ((square = prompt(ply, grid)) == -1)
